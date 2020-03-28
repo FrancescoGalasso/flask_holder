@@ -1,0 +1,3 @@
+FLASK_APP=flask_holder.py
+FLASK_DEBUG=1
+FLASK_CONFIG=development
