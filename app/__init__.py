@@ -8,7 +8,7 @@ from flask_login import LoginManager
 
 bootstrap = Bootstrap()
 db = SQLAlchemy()
-admin = Admin()
+admin = Admin(template_mode='bootstrap3')
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
@@ -33,5 +33,8 @@ def create_app(config_name):
 
 	from .auth import auth as auth_blueprint
 	app.register_blueprint(auth_blueprint, url_prefix='/auth')
+
+	from .admin import admin_bp as admin_blueprint
+	app.register_blueprint(admin_blueprint)
 
 	return app
