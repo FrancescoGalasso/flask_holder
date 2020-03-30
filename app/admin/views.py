@@ -1,8 +1,12 @@
-from flask_admin.contrib.sqla import ModelView
-from .. import db, admin
-from ..models import User, Role, MachineIdentity
+from flask import redirect, url_for
+from flask_login import login_required, current_user
+from flask_admin import AdminIndexView
 
 
-admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(Role, db.session))
-admin.add_view(ModelView(MachineIdentity, db.session))
+class MyAdminIndexView(AdminIndexView):
+	def is_accessible(self):
+		return current_user.is_authenticated
+
+	def inaccessible_callback(self, name, **kwargs):
+		# redirect to login page if user doesn't have access
+		return redirect(url_for('auth.login'))

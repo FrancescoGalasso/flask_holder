@@ -10,7 +10,8 @@ from werkzeug.urls import url_parse
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
 	if current_user.is_authenticated:
-		return redirect(url_for('index'))
+		next_page = '/'
+		return redirect(next_page)
 	form = LoginForm()
 	if form.validate_on_submit():
 		user = User.query.filter_by(name=form.username.data).first()
@@ -20,7 +21,7 @@ def login():
 		login_user(user, remember=False)
 		next_page = request.args.get('next')
 		if not next_page or url_parse(next_page).netloc != '':
-			next_page = url_for('main.index')
+			next_page = '/'
 		return redirect(next_page)
 	return render_template('auth/login.html', title='Sign In', form=form)
 
@@ -29,5 +30,4 @@ def login():
 @login_required
 def logout():
 	logout_user()
-	# print(url_for('auth.login'))
 	return redirect(url_for('auth.login'))
