@@ -30,7 +30,6 @@ class BaseCustomModelView(ModelView):
 	def is_accessible(self):
 		_tablename = self.model.__tablename__
 
-		# self.can_create = True
 		self.can_create = has_permission(_tablename, current_user, 'create')
 		self.can_edit = has_permission(_tablename, current_user, 'edit')
 		self.can_delete = has_permission(_tablename, current_user, 'delete')
@@ -44,7 +43,6 @@ class BaseCustomModelView(ModelView):
 
 
 class UserModelView(BaseCustomModelView):
-	# pass
 	column_exclude_list = exclude_list + ('password_hash',)
 
 	can_view_details = True

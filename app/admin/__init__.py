@@ -17,4 +17,3 @@ def create_module(app, **kwargs):
 	admin.add_view(MachineIdentityModelView(MachineIdentity, db.session))
 
 	admin.add_link(LogoutMenuLink(name='Logout', category='', url="/auth/logout"))
-	# admin.add_link(LogoutMenuLink(name='Logout', category='', url=url_for('auth.logout'))

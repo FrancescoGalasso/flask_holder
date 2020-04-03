@@ -75,13 +75,9 @@ def load_user(id):
 
 
 def has_permission(table_name, current_user, action):
-    print('table_name: {}'.format(table_name))
-    print('current_user name: {}'.format(current_user.name))
 
-    # print('create role tablenames: {}'.format(current_user.role.action))
     if hasattr(current_user.role, action):
         _tablenames = getattr(current_user.role, action)
-        print('_tablenames: {}'.format(_tablenames))
         has_action = False
         if _tablenames and table_name in _tablenames:
             has_action = True
