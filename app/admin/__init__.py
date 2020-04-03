@@ -1,8 +1,9 @@
 from flask_admin import Admin
 from .. import db
-from .views import MyAdminIndexView
+from .views import MyAdminIndexView, LogoutMenuLink, UserModelView, RoleModelView, MachineIdentityModelView
 from ..models import User, Role, MachineIdentity
 from flask_admin.contrib.sqla import ModelView
+from flask import url_for
 
 
 admin = Admin(template_mode='bootstrap3',
@@ -11,7 +12,9 @@ admin = Admin(template_mode='bootstrap3',
 def create_module(app, **kwargs):
 	admin.init_app(app)
 
-	models = [User, Role, MachineIdentity]
+	admin.add_view(UserModelView(User, db.session))
+	admin.add_view(RoleModelView(Role, db.session))
+	admin.add_view(MachineIdentityModelView(MachineIdentity, db.session))
 
-	for model in models:
-		admin.add_view(ModelView(model, db.session))
+	admin.add_link(LogoutMenuLink(name='Logout', category='', url="/auth/logout"))
+	# admin.add_link(LogoutMenuLink(name='Logout', category='', url=url_for('auth.logout'))
