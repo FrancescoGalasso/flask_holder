@@ -43,12 +43,22 @@ class User(UserMixin, NameModel):
 
     password_hash = db.Column(db.String(128))
     email = db.Column(db.String(120), index=True, unique=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
 class Role(NameModel):
     __tablename__ = 'roles'
+
+    users = db.relationship('User', backref='role')
+    create = db.Column(db.Text)
+    read = db.Column(db.Text)
+    update = db.Column(db.Text)
+    delete = db.Column(db.Text)
 
 
 class MachineIdentity(BaseModel):
@@ -64,18 +74,17 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-def setup_orm(db):
-    # for safety drop all tables
-    db.drop_all()
+def has_permission(table_name, current_user, action):
+    print('table_name: {}'.format(table_name))
+    print('current_user name: {}'.format(current_user.name))
 
-    # create tables
-    db.create_all()
+    # print('create role tablenames: {}'.format(current_user.role.action))
+    if hasattr(current_user.role, action):
+        _tablenames = getattr(current_user.role, action)
+        print('_tablenames: {}'.format(_tablenames))
+        has_action = False
+        if _tablenames and table_name in _tablenames:
+            has_action = True
+        
+        return True if has_action else False
 
-    # create admin user
-    admin = User(name='admin', password_hash=generate_password_hash('admin'),email='admin@example.com')
-    db.session.add(admin)
-    db.session.commit()
-
-def populate_sample_db(db):
-    # TODO: create samples to add into db
-    pass

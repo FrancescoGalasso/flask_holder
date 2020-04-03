@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from flask_admin import AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
+from ..models import has_permission
 
 
 exclude_list = ('creation_time', 'modification_time')
@@ -27,11 +28,16 @@ class BaseCustomModelView(ModelView):
 	column_exclude_list = exclude_list
 
 	def is_accessible(self):
-		self.can_create = True
-		self.can_edit = True
-		self.can_delete = True
+		_tablename = self.model.__tablename__
 
-		return current_user.is_authenticated
+		# self.can_create = True
+		self.can_create = has_permission(_tablename, current_user, 'create')
+		self.can_edit = has_permission(_tablename, current_user, 'edit')
+		self.can_delete = has_permission(_tablename, current_user, 'delete')
+
+		can_read = has_permission(_tablename, current_user, 'read')
+
+		return True if current_user.is_authenticated and can_read else False
 
 	def inacessible_callback(self, name, **kwargs):
 		return redirect(url_for('login'))
