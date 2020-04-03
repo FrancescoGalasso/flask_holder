@@ -1,29 +1,15 @@
 import os
 import click
 from app import create_app, db
-from app.models import setup_orm, User, Role
+from app.models import User, Role
+from cli import register_cli
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+register_cli(app)
 
 @app.shell_context_processor
 def make_shell_context():
 	return dict(db=db, User=User, Role=Role)
-
-
-@app.cli.command()
-def test():
-	"""Run the unit tests."""
-	import unittest
-	tests = unittest.TestLoader().discover('tests')
-	unittest.TextTestRunner(verbosity=2).run(tests)
-
-@app.cli.command()
-def generate_db():
-	"""Generate db, create <Admin> User, generate Role objects"""
-	
-	with app.app_context():
-		setup_orm(db)
-
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0", port=5000)
