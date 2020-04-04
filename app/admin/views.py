@@ -31,7 +31,7 @@ class BaseCustomModelView(ModelView):
 		_tablename = self.model.__tablename__
 
 		self.can_create = has_permission(_tablename, current_user, 'create')
-		self.can_edit = has_permission(_tablename, current_user, 'edit')
+		self.can_edit = has_permission(_tablename, current_user, 'update')
 		self.can_delete = has_permission(_tablename, current_user, 'delete')
 
 		can_read = has_permission(_tablename, current_user, 'read')
