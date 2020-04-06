@@ -82,5 +82,27 @@ def has_permission(table_name, current_user, action):
         if _tablenames and table_name in _tablenames:
             has_action = True
         
+        # print('table_name: {} | action: {} | has permission: {}'.format(table_name, action, has_action))
         return True if has_action else False
+
+
+class ItemFile(NameModel):
+    __tablename__ = 'item_files'
+    data = db.Column(db.LargeBinary) # blob type into sqlite
+    description = db.Column(db.String(240))
+    # platform = db.Column(db.String(120))
+    # file_type = db.Column(db.String(120))
+    platform_id = db.Column(db.Integer, db.ForeignKey('item_files_platforms.id'))
+    type_id = db.Column(db.Integer, db.ForeignKey('item_files_types.id'))
+
+class ItemFilePlatform(NameModel):
+    __tablename__ = 'item_files_platforms'
+    description = db.Column(db.String(240))
+    item_file = db.relationship('ItemFile', backref='platform')
+
+
+class ItemFileType(NameModel):
+    __tablename__ = 'item_files_types'
+    description = db.Column(db.String(240))
+    item_type = db.relationship('ItemFile', backref='type')
 

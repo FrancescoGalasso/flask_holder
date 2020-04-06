@@ -52,3 +52,14 @@ class RoleModelView(BaseCustomModelView):
 
 class MachineIdentityModelView(BaseCustomModelView):
 	pass
+
+class ItemFileModelView(BaseCustomModelView):
+	column_exclude_list = exclude_list + ('data',)
+
+	# list_template='admin/list.html'
+
+class ItemFilePlatformModelView(BaseCustomModelView):
+	pass
+
+class ItemFileTypeModelView(BaseCustomModelView):
+	pass
