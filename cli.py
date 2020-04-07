@@ -1,7 +1,7 @@
 import click
 
 from app import db
-from app.models import User, Role
+from app.models import User, Role, MachineIdentity, ItemFile, ItemFilePlatform, ItemFileType
 from werkzeug.security import generate_password_hash
 
 
@@ -23,7 +23,13 @@ def register_cli(app):
 		# create tables
 		db.create_all()
 		# create Admin Role
-		admin_role = Role(name='admin')
+		_table_names = db.engine.table_names()
+		table_names = ','.join(_table_names)
+		admin_role = Role(name='admin',
+						  create=table_names,
+						  read=table_names,
+						  update=table_names,
+						  delete=table_names)
 		# create admin user
 		admin_user = User(name='admin', password_hash=generate_password_hash('admin'),
 					email='admin@example.com', role=admin_role)
@@ -37,7 +43,6 @@ def register_cli(app):
 			# log.error("Fail to add new user: %s Error: %s" % (username, e))
 			click.echo('ERROR: {}'.format(e))
 			db.session.rollback()
-
 
 	@app.cli.command()
 	def generate_sample_roles():
@@ -78,3 +83,43 @@ def register_cli(app):
 	        # log.error("Fail to add new user: %s Error: %s" % (username, e))
 	        click.echo("Fail to add new user: %s Error: %s" % (username, e))
 	        db.session.rollback()
+
+	@app.cli.command()
+	def generate_sample_files():
+		"""Generate sample files"""
+
+		platform_win32 = ItemFilePlatform(name='win32', description='Windows 32 bit')
+		platform_win64 = ItemFilePlatform(name='win64', description='Windows 64 bit')
+
+		type_manual = ItemFileType(name='doc', description='Manual')
+		# type_program = models.ItemFileType(name='prog', description='Program')
+
+		file_data_1 = "This is a test file 1 !!!".encode()	#bytes
+		file_data_2 = "This is a test file 2 !!!".encode()	#bytes
+
+
+		item_file_1 = ItemFile(name='test_file_1.txt',
+								data=file_data_1,
+								description='This is a test file to download',
+								platform=platform_win32,
+								type=type_manual)
+
+		item_file_2 = ItemFile(name='test_file_2.txt',
+								data=file_data_2,
+								description='This is an another test file to download',
+								platform=platform_win64,
+								type=type_manual)
+
+		item_files = [item_file_1, item_file_2]
+
+		try:
+			for item in item_files:
+				db.session.add(item)
+				click.echo('Item "{0}" Added.'.format(item.name))
+
+			db.session.commit()
+		except Exception as e:
+			# log.error("Fail to add new user: %s Error: %s" % (username, e))
+			click.echo('ERROR: {}'.format(e))
+			db.session.rollback()
+
