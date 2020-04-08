@@ -2,6 +2,8 @@ from . import db, login_manager
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy.inspection import inspect  # pylint: disable=import-error
+
 
 class BaseModel(db.Model):
     # This is an abstract class: SQLAlchemy will not create a table for that model!
@@ -94,6 +96,13 @@ class ItemFile(NameModel):
     # file_type = db.Column(db.String(120))
     platform_id = db.Column(db.Integer, db.ForeignKey('item_files_platforms.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('item_files_types.id'))
+
+    # @property
+    # def get_file_type(self):
+    #     return type.name
+    @property
+    def str_time(self):
+        return self.creation_time.strftime('%B %d %Y')
 
 class ItemFilePlatform(NameModel):
     __tablename__ = 'item_files_platforms'

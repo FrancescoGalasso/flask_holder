@@ -13,7 +13,8 @@ from .views import (MyAdminIndexView,
 					MachineIdentityModelView,
 					ItemFileModelView,
 					ItemFilePlatformModelView,
-					ItemFileTypeModelView)
+					ItemFileTypeModelView,
+					DownloadsView)
 from flask_admin.contrib.sqla import ModelView
 from flask import url_for
 
@@ -37,6 +38,7 @@ def create_module(app, **kwargs):
 	admin.add_view(ItemFileModelView(ItemFile, db.session))
 	admin.add_view(ItemFilePlatformModelView(ItemFilePlatform, db.session)),
 	admin.add_view(ItemFileTypeModelView(ItemFileType, db.session))
+	admin.add_view(DownloadsView(name='Downloads', endpoint='downloads'))
 
 	# for model_view in custom_model_views:
 	# 	admin.add_view(model_view)

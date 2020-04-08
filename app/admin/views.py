@@ -1,6 +1,6 @@
-from flask import redirect, url_for
+from flask import redirect, url_for, send_file
 from flask_login import login_required, current_user
-from flask_admin import AdminIndexView
+from flask_admin import AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
 from ..models import has_permission
@@ -56,10 +56,33 @@ class MachineIdentityModelView(BaseCustomModelView):
 class ItemFileModelView(BaseCustomModelView):
 	column_exclude_list = exclude_list + ('data',)
 
-	# list_template='admin/list.html'
 
 class ItemFilePlatformModelView(BaseCustomModelView):
 	pass
 
 class ItemFileTypeModelView(BaseCustomModelView):
 	pass
+
+class DownloadsView(BaseView):
+	@expose('/')
+	def index(self):
+		from ..models import ItemFile, ItemFileType
+		doc_type = ItemFileType.query.filter_by(name='doc').first()
+		prog_type = ItemFileType.query.filter_by(name='prog').first()
+
+		doc_files = ItemFile.query.filter_by(type=doc_type).all()
+		prog_files = ItemFile.query.filter_by(type=prog_type).all()
+
+		return self.render('admin/downloads.html', doc_files=doc_files, prog_files=prog_files)
+
+	@expose('/download/<int:file_id>')
+	@login_required
+	def download(self, file_id):
+		# return self.render('admin/second_page.html')
+		from ..models import ItemFile
+		obj = ItemFile.query.filter_by(id=file_id).first()
+		# print('file_id: {} | file: {}'.format(file_id, obj))
+
+		from io import BytesIO
+		return send_file(BytesIO(obj.data), attachment_filename=obj.name, as_attachment=True)
+
