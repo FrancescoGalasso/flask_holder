@@ -86,31 +86,52 @@ def register_cli(app):
 
 	@app.cli.command()
 	def generate_sample_files():
-		"""Generate sample files"""
+		"""Generate sample ItemFile, ItemFilePlatform and ItemFileType by deleting existing ones"""
+
+		try:
+			db.session.query(ItemFile).delete()
+			db.session.query(ItemFilePlatform).delete()
+			db.session.query(ItemFileType).delete()
+			db.session.commit()
+			click.echo('Deleted all ItemFile')
+		except Exception as e:
+			# log.error("Fail to add new user: %s Error: %s" % (username, e))
+			click.echo('ERROR: {}'.format(e))
+			db.session.rollback()
 
 		platform_win32 = ItemFilePlatform(name='win32', description='Windows 32 bit')
 		platform_win64 = ItemFilePlatform(name='win64', description='Windows 64 bit')
 
 		type_manual = ItemFileType(name='doc', description='Manual')
-		# type_program = models.ItemFileType(name='prog', description='Program')
+		type_program = ItemFileType(name='prog', description='Program')
 
 		file_data_1 = "This is a test file 1 !!!".encode()	#bytes
 		file_data_2 = "This is a test file 2 !!!".encode()	#bytes
-
+		file_data_3 = "This is a test file tries to be a program !!!".encode()	#bytes
 
 		item_file_1 = ItemFile(name='test_file_1.txt',
 								data=file_data_1,
 								description='This is a test file to download',
-								platform=platform_win32,
 								type=type_manual)
 
 		item_file_2 = ItemFile(name='test_file_2.txt',
 								data=file_data_2,
 								description='This is an another test file to download',
-								platform=platform_win64,
 								type=type_manual)
 
-		item_files = [item_file_1, item_file_2]
+		item_file_3 = ItemFile(name='test_file_3.txt',
+								data=file_data_3,
+								description='This is a fake program file to download',
+								platform=platform_win64,
+								type=type_program)
+
+		item_file_4 = ItemFile(name='test_file_4.txt',
+								data=file_data_3,
+								description='This is a fake program file to download',
+								platform=platform_win32,
+								type=type_program)
+
+		item_files = [item_file_2, item_file_1, item_file_3]
 
 		try:
 			for item in item_files:
