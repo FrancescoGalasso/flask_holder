@@ -90,16 +90,13 @@ def has_permission(table_name, current_user, action):
 
 class ItemFile(NameModel):
     __tablename__ = 'item_files'
-    data = db.Column(db.LargeBinary) # blob type into sqlite
+    # data = db.Column(db.LargeBinary) # blob type into sqlite
+    realname = db.Column(db.String(80), nullable=False)
+    item_path = db.Column(db.String(240), nullable=False)
     description = db.Column(db.String(240))
-    # platform = db.Column(db.String(120))
-    # file_type = db.Column(db.String(120))
     platform_id = db.Column(db.Integer, db.ForeignKey('item_files_platforms.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('item_files_types.id'))
 
-    # @property
-    # def get_file_type(self):
-    #     return type.name
     @property
     def str_time(self):
         return self.creation_time.strftime('%B %d %Y')
