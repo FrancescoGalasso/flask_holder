@@ -10,3 +10,6 @@ __pycache__/
 
 # Virtual environment
 venv
+
+# folder uploaded files
+uploaded_files

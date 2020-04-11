@@ -14,6 +14,7 @@ class Config:
     FLASKY_MAIL_SENDER = 'Flasky Admin <flasky@example.com>'
     FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    UPLOADED_FILE_FOLDER = os.environ.get('UPLOADED_FILE_FOLDER') or 'path/to/uploaded_file_folder'
 
     @staticmethod
     def init_app(app):

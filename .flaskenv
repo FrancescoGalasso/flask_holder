@@ -1,3 +1,4 @@
 FLASK_APP=flask_holder.py
 FLASK_DEBUG=1
 FLASK_CONFIG=development
+UPLOADED_FILE_FOLDER=/Users/franky/Documents/git/flask_holder/uploaded_files
