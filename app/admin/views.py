@@ -4,7 +4,10 @@ from flask_admin import AdminIndexView, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
 from ..models import has_permission
-
+from flask_admin.form.upload import FileUploadField
+# from wtforms import FileUploadField
+# from app import config
+# print('config: {}'.format(config.get('UPLOADED_FILE_FOLDER')))
 
 exclude_list = ('creation_time', 'modification_time')
 
@@ -54,7 +57,36 @@ class MachineIdentityModelView(BaseCustomModelView):
 	pass
 
 class ItemFileModelView(BaseCustomModelView):
-	column_exclude_list = exclude_list + ('data',)
+
+	def __init__(self, app, model, session, name=None, category=None, endpoint=None, url=None, static_folder=None,
+				 menu_class_name=None, menu_icon_type=None, menu_icon_value=None):
+
+		# Override form field to use Flask-Admin FileUploadField
+		path_uploaded_files = app.config.get('UPLOADED_FILE_FOLDER')
+		self.form_args = {
+			'item_path': {
+				'label': 'File Upload',
+				'base_path':  path_uploaded_files,
+				'allow_overwrite': True,
+			}
+		}
+
+		super().__init__(model, session, name, category, endpoint, url, static_folder, menu_class_name,
+						 menu_icon_type, menu_icon_value)
+
+	column_exclude_list = exclude_list + ('realname',)
+
+	form_overrides = dict(item_path= FileUploadField)
+	form_excluded_columns = ('realname',)
+
+	def on_model_change(self, form, model, is_created):
+
+		obj_file_storage = form.data.get('item_path')
+		obj_filename = obj_file_storage.filename
+		file_base_path = self.form_args.get('item_path').get('base_path')
+		import os
+		model.item_path = os.path.join(file_base_path, obj_filename)
+		model.realname = obj_filename
 
 
 class ItemFilePlatformModelView(BaseCustomModelView):
@@ -78,11 +110,9 @@ class DownloadsView(BaseView):
 	@expose('/download/<int:file_id>')
 	@login_required
 	def download(self, file_id):
-		# return self.render('admin/second_page.html')
 		from ..models import ItemFile
 		obj = ItemFile.query.filter_by(id=file_id).first()
-		# print('file_id: {} | file: {}'.format(file_id, obj))
 
-		from io import BytesIO
-		return send_file(BytesIO(obj.data), attachment_filename=obj.name, as_attachment=True)
+		path_file_to_download = obj.item_path
+		return send_file(path_file_to_download, attachment_filename=obj.realname, as_attachment=True)
 

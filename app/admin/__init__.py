@@ -25,21 +25,23 @@ admin = Admin(template_mode='bootstrap3',
 def create_module(app, **kwargs):
 	admin.init_app(app)
 
-	# custom_model_views = [UserModelView(User, db.session),
-	# 					  RoleModelView(Role, db.session),
-	# 					  MachineIdentityModelView(MachineIdentity, db.session),
-	# 					  ItemFileModelView(MachineIdentity, db.session),
-	# 					  ItemFilePlatformModelView(MachineIdentity, db.session),
-	# 					  ItemFileTypeModelView(MachineIdentity, db.session)]
-
 	admin.add_view(UserModelView(User, db.session))
 	admin.add_view(RoleModelView(Role, db.session))
 	admin.add_view(MachineIdentityModelView(MachineIdentity, db.session))
-	admin.add_view(ItemFileModelView(ItemFile, db.session))
+	# admin.add_view(ItemFileModelView(ItemFile, db.session))
 	admin.add_view(ItemFilePlatformModelView(ItemFilePlatform, db.session)),
 	admin.add_view(ItemFileTypeModelView(ItemFileType, db.session))
 	admin.add_view(DownloadsView(name='Downloads', endpoint='downloads'))
 
+	@app.before_first_request
+	def add_context_to_admin():
+		admin.add_view(
+			ItemFileModelView(
+				app=app,
+				model=ItemFile,
+				session=db.session
+			)
+		)
 	# for model_view in custom_model_views:
 	# 	admin.add_view(model_view)
 
