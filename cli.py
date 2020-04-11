@@ -3,6 +3,7 @@ import click
 from app import db
 from app.models import User, Role, MachineIdentity, ItemFile, ItemFilePlatform, ItemFileType
 from werkzeug.security import generate_password_hash
+import os
 
 
 def register_cli(app):
@@ -69,20 +70,20 @@ def register_cli(app):
 	@click.argument('password')
 	@click.argument('role_name')
 	def create_user(username, password, role_name):
-	    _user= User()
-	    _role = Role.query.filter_by(name=role_name).first()
-	    _user.name = username
-	    _user.set_password(password)
-	    _user.role = _role
+		_user= User()
+		_role = Role.query.filter_by(name=role_name).first()
+		_user.name = username
+		_user.set_password(password)
+		_user.role = _role
 
-	    try:
-	        db.session.add(_user)
-	        db.session.commit()
-	        click.echo('User {0} Added.'.format(username))
-	    except Exception as e:
-	        # log.error("Fail to add new user: %s Error: %s" % (username, e))
-	        click.echo("Fail to add new user: %s Error: %s" % (username, e))
-	        db.session.rollback()
+		try:
+			db.session.add(_user)
+			db.session.commit()
+			click.echo('User {0} Added.'.format(username))
+		except Exception as e:
+			# log.error("Fail to add new user: %s Error: %s" % (username, e))
+			click.echo("Fail to add new user: %s Error: %s" % (username, e))
+			db.session.rollback()
 
 	@app.cli.command()
 	def generate_sample_files():
@@ -99,39 +100,41 @@ def register_cli(app):
 			click.echo('ERROR: {}'.format(e))
 			db.session.rollback()
 
-		platform_win32 = ItemFilePlatform(name='win32', description='Windows 32 bit')
-		platform_win64 = ItemFilePlatform(name='win64', description='Windows 64 bit')
+		uploaded_file_folder = os.environ.get('UPLOADED_FILE_FOLDER')
+		if uploaded_file_folder and not os.path.exists(uploaded_file_folder):
+			os.makedirs(uploaded_file_folder)
 
-		type_manual = ItemFileType(name='doc', description='Manual')
-		type_program = ItemFileType(name='prog', description='Program')
+		item_files = []
+		texts = ['This is a test file !'.encode(),
+				 'This is an another test file !!!'.encode(),
+				 'This is a test file tries to be a program !!!'.encode()]
+		descriptions = ['This is a test file to download',
+						'This is an another test file to download',
+						'This is a fake program file to download']
+		platforms = [ItemFilePlatform(name='win32', description='Windows 32 bit'),
+					 ItemFilePlatform(name='win64', description='Windows 64 bit')]
+		types = [ItemFileType(name='doc', description='Manual'),
+				 ItemFileType(name='prog', description='Program')]
 
-		file_data_1 = "This is a test file 1 !!!".encode()	#bytes
-		file_data_2 = "This is a test file 2 !!!".encode()	#bytes
-		file_data_3 = "This is a test file tries to be a program !!!".encode()	#bytes
+		for idx,text in enumerate(texts):
+			example_file_path = os.path.join(uploaded_file_folder, 'test_file_{}.txt'.format(idx))
+			with open(example_file_path, 'wb') as out:
+				out.write(text)
 
-		item_file_1 = ItemFile(name='test_file_1.txt',
-								data=file_data_1,
-								description='This is a test file to download',
-								type=type_manual)
+			sample_file_platform = platforms[0]
+			sample_file_type = types[0]
 
-		item_file_2 = ItemFile(name='test_file_2.txt',
-								data=file_data_2,
-								description='This is an another test file to download',
-								type=type_manual)
+			if idx > 1:
+				sample_file_type = types[1]
 
-		item_file_3 = ItemFile(name='test_file_3.txt',
-								data=file_data_3,
-								description='This is a fake program file to download',
-								platform=platform_win64,
-								type=type_program)
+			sample_file = ItemFile(name='test_file_{}'.format(idx),
+								realname='test_file_{}.txt'.format(idx),
+								item_path=example_file_path,
+								description=descriptions[idx],
+								platform=sample_file_platform,
+								type=sample_file_type)
 
-		item_file_4 = ItemFile(name='test_file_4.txt',
-								data=file_data_3,
-								description='This is a fake program file to download',
-								platform=platform_win32,
-								type=type_program)
-
-		item_files = [item_file_2, item_file_1, item_file_3]
+			item_files.append(sample_file)
 
 		try:
 			for item in item_files:
